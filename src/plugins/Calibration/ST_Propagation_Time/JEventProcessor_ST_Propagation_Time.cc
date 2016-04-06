@@ -129,9 +129,14 @@ jerror_t JEventProcessor_ST_Propagation_Time::brun(JEventLoop *eventLoop, int32_
     _DBG_<<"Cannot get DApplication from JEventLoop! (are you using a JApplication based program?)"<<endl; 
   DGeometry* locGeometry = dapp->GetDGeometry(eventLoop->GetJEvent().GetRunNumber());
   locGeometry->GetStartCounterGeom(sc_pos, sc_norm);
+
+  double theta = sc_norm[0][sc_norm[0].size()-2].Theta(); 
+  sc_angle_cor = 1./cos(M_PI_2 - theta);
+
   // Propagation Time constant
   if(eventLoop->GetCalib("START_COUNTER/propagation_time_corr", propagation_time_corr))
     jout << "Error loading /START_COUNTER/propagation_time_corr !" << endl;
+
   return NOERROR;
 }
 
@@ -311,23 +316,29 @@ jerror_t JEventProcessor_ST_Propagation_Time::evnt(JEventLoop *loop, uint64_t ev
 	  // Straight Sections
 	  if (locSCzIntersection > sc_pos_soss && locSCzIntersection <= sc_pos_eoss)
 	    {
-	      Corr_Time_ss = locSCPropTime - (incpt_ss + (slope_ss *  locSCzIntersection));
-	      h2_PropTimeCorr_z_SS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_ss);
-	      h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ss);
+            double L = locSCzIntersection - sc_pos_soss;
+            Corr_Time_ss = locSCPropTime  - (incpt_ss + (slope_ss *  L));
+            //Corr_Time_ss = locSCPropTime - (incpt_ss + (slope_ss *  locSCzIntersection));
+            h2_PropTimeCorr_z_SS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_ss);
+            h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ss);
 	    }
 	  // Bend Sections
 	  if(locSCzIntersection > sc_pos_eoss && locSCzIntersection <= sc_pos_eobs)
 	    {
-	      Corr_Time_bs = locSCPropTime - (incpt_bs + (slope_bs *  locSCzIntersection));
-	      h2_PropTimeCorr_z_BS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_bs);
-	      h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_bs);
+            double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+            Corr_Time_ns = locSCPropTime  - (incpt_bs + (slope_bs *  L));
+            //Corr_Time_bs = locSCPropTime - (incpt_bs + (slope_bs *  locSCzIntersection));
+            h2_PropTimeCorr_z_BS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_bs);
+            h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_bs);
 	    }
 	  // Nose Sections
 	  if(locSCzIntersection > sc_pos_eobs && locSCzIntersection <= sc_pos_eons)
 	    { 
-	      Corr_Time_ns = locSCPropTime - (incpt_ns + (slope_ns *  locSCzIntersection));
-	      h2_PropTimeCorr_z_NS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_ns);
-	      h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ns);
+            double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+            Corr_Time_ns = locSCPropTime - (incpt_ns + (slope_ns *  L));
+            //Corr_Time_ns = locSCPropTime - (incpt_ns + (slope_ns *  locSCzIntersection));
+            h2_PropTimeCorr_z_NS_chan[sc_index]->Fill(locSCzIntersection,Corr_Time_ns);
+            h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ns);
 	    }
    	} // sc charged tracks
     }// TOF reference time

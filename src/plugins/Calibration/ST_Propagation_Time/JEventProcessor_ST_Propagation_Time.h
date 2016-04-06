@@ -110,6 +110,8 @@ class JEventProcessor_ST_Propagation_Time:public jana::JEventProcessor{
 		TH2I **h2_CorrectedTime_z;
 		//Define Calibration parameters variable called from CCDB
 		vector<vector<double> >propagation_time_corr;
+
+        double sc_angle_cor;
 };
 #endif // _JEventProcessor_ST_Propagation_Time_
 

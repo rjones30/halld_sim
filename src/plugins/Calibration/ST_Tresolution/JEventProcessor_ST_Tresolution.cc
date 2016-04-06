@@ -8,6 +8,7 @@
 #include "JEventProcessor_ST_Tresolution.h"
 using namespace jana;
 
+#include "START_COUNTER/DSCTruthHit.h"
 
 // Routine used to create our JEventProcessor
 #include <JANA/JApplication.h>
@@ -69,13 +70,16 @@ jerror_t JEventProcessor_ST_Tresolution::init(void)
       h2_CorrectedTime_z[i] = new TH2I(Form("h2_CorrectedTime_z_%i", i+1), "Corrected Time vs. Z; Z (cm); Propagation Time (ns)", NoBins_z,z_lower_limit,z_upper_limit, NoBins_time, time_lower_limit, time_upper_limit);
     }
 
+  h_ss_zres = new TH1I("ss_zres","delta dist, straight section", 500, -5., 5.);
+  h_bs_zres = new TH1I("bs_zres","delta dist, bend section", 500, -5., 5.);
+  h_ns_zres = new TH1I("ns_zres","delta dist, nose section", 500, -5., 5.);
+
   // cd back to main directory
   main->cd();
   japp->RootUnLock();
 
-  RF_BUNCH_TAG = "Calibrations";
-  gPARMS->SetDefaultParameter("SC_TCALIB:RF_BUNCH_TAG", RF_BUNCH_TAG, "RF bunch selection tag for SC timing resolution");
-  
+  sc_angle_cor = 0.;
+
   return NOERROR;
 }
 
@@ -123,6 +127,10 @@ jerror_t JEventProcessor_ST_Tresolution::brun(JEventLoop *eventLoop, int32_t run
     _DBG_<<"Cannot get DApplication from JEventLoop! (are you using a JApplication based program?)"<<endl; 
   DGeometry* locGeometry = dapp->GetDGeometry(eventLoop->GetJEvent().GetRunNumber());
   locGeometry->GetStartCounterGeom(sc_pos, sc_norm);
+
+  double theta = sc_norm[0][sc_norm[0].size()-2].Theta();
+  sc_angle_cor = 1./cos(M_PI_2 - theta);
+
   // Propagation Time constant
   if(eventLoop->GetCalib("START_COUNTER/propagation_time_corr", propagation_time_corr))
     jout << "Error loading /START_COUNTER/propagation_time_corr !" << endl;
@@ -152,6 +160,9 @@ jerror_t JEventProcessor_ST_Tresolution::evnt(JEventLoop *loop, uint64_t eventnu
   vector<const DSCHit *> scHitVector;
   loop->Get(scHitVector);
 
+  vector<const DSCTruthHit *> scTruthHitVector;
+  loop->Get(scTruthHitVector);
+
   // RF time object
   const DRFTime* thisRFTime = NULL;
   vector <const DRFTime*> RFTimeVector;
@@ -169,7 +180,7 @@ jerror_t JEventProcessor_ST_Tresolution::evnt(JEventLoop *loop, uint64_t eventnu
   
   // Grab the associated RF bunch object
   const DEventRFBunch *thisRFBunch = NULL;
-  loop->GetSingle(thisRFBunch, RF_BUNCH_TAG.c_str());
+  loop->GetSingle(thisRFBunch);
 
   japp->RootWriteLock();
   for (uint32_t i = 0; i < chargedTrackVector.size(); i++)
@@ -248,24 +259,44 @@ jerror_t JEventProcessor_ST_Tresolution::evnt(JEventLoop *loop, uint64_t eventnu
       // Straight Sections
       if (locSCzIntersection > sc_pos_soss && locSCzIntersection <= sc_pos_eoss)
 	{
-	  Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  locSCzIntersection));
+        double L = locSCzIntersection - sc_pos_soss;
+        //Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  locSCzIntersection));
+        Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  L));
 	  SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_ss);
 	  h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ss -SC_RFShiftedTime);
 	}
       // Bend Sections
       if(locSCzIntersection > sc_pos_eoss && locSCzIntersection <= sc_pos_eobs)
 	{
-	  Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs *  locSCzIntersection));
-	  SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_bs);
-	  h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_bs - SC_RFShiftedTime);
+        double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+        //Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs *  locSCzIntersection));
+        Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs * L));
+        SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_bs);
+        h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_bs - SC_RFShiftedTime);
 	}
       // Nose Sections
       if(locSCzIntersection > sc_pos_eobs && locSCzIntersection <= sc_pos_eons)
 	{ 
-	  Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  locSCzIntersection));
+        double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+        //Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  locSCzIntersection));
+        Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  L));
 	  SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_ns);
 	  h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ns - SC_RFShiftedTime);
 	}
+      
+      for(unsigned int loc_k=0; loc_k<scTruthHitVector.size(); loc_k++) {
+          const DSCTruthHit * scTruthHit = scTruthHitVector[loc_k];
+          if(scTruthHit->sector == st_params[0].dSCHit->sector) {
+              if (locSCzIntersection > sc_pos_soss && locSCzIntersection <= sc_pos_eoss) {
+                  h_ss_zres->Fill(locSCzIntersection - scTruthHit->z);
+              } else if(locSCzIntersection > sc_pos_eoss && locSCzIntersection <= sc_pos_eobs) {
+                  h_bs_zres->Fill(locSCzIntersection - scTruthHit->z);
+              } else if(locSCzIntersection > sc_pos_eobs && locSCzIntersection <= sc_pos_eons) {
+                  h_ns_zres->Fill(locSCzIntersection - scTruthHit->z);
+              }
+          }
+      }
+
     } // sc charged tracks
   japp->RootUnLock();
   return NOERROR;

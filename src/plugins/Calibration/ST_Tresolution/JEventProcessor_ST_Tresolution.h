@@ -98,10 +98,17 @@ class JEventProcessor_ST_Tresolution:public jana::JEventProcessor{
 		bool sc_match, sc_match_pid;
 		// ******************* 2D histos **************
 		TH2I **h2_CorrectedTime_z;
+        TH1I *h_ss_zres;
+        TH1I *h_bs_zres;
+        TH1I *h_ns_zres;
 		//Define Calibration parameters variable called from CCDB
 		vector<vector<double> >propagation_time_corr;
 
         string RF_BUNCH_TAG;
+        double sc_angle_cor;
+
+        //vector<vector<DVector3> >sc_pos;
+        //vector<vector<DVector3> >sc_norm;
 };
 
 #endif // _JEventProcessor_ST_Tresolution_

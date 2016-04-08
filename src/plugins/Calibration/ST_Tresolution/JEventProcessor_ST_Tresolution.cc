@@ -260,26 +260,26 @@ jerror_t JEventProcessor_ST_Tresolution::evnt(JEventLoop *loop, uint64_t eventnu
       if (locSCzIntersection > sc_pos_soss && locSCzIntersection <= sc_pos_eoss)
 	{
         double L = locSCzIntersection - sc_pos_soss;
-        //Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  locSCzIntersection));
-        Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  L));
+        Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  locSCzIntersection));
+        //Corr_Time_ss = st_corr_FlightTime  - (incpt_ss + (slope_ss *  L));
 	  SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_ss);
 	  h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ss -SC_RFShiftedTime);
 	}
       // Bend Sections
       if(locSCzIntersection > sc_pos_eoss && locSCzIntersection <= sc_pos_eobs)
 	{
-        double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
-        //Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs *  locSCzIntersection));
-        Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs * L));
+        //double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+        Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs *  locSCzIntersection));
+        //Corr_Time_bs =  st_corr_FlightTime  - (incpt_bs + (slope_bs * L));
         SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_bs);
         h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_bs - SC_RFShiftedTime);
 	}
       // Nose Sections
       if(locSCzIntersection > sc_pos_eobs && locSCzIntersection <= sc_pos_eons)
 	{ 
-        double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
-        //Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  locSCzIntersection));
-        Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  L));
+        //double L = (locSCzIntersection - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+        Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  locSCzIntersection));
+        //Corr_Time_ns =  st_corr_FlightTime  - (incpt_ns + (slope_ns *  L));
 	  SC_RFShiftedTime = dRFTimeFactory->Step_TimeToNearInputTime(locVertexRFTime,  Corr_Time_ns);
 	  h2_CorrectedTime_z[sc_index]->Fill(locSCzIntersection,Corr_Time_ns - SC_RFShiftedTime);
 	}

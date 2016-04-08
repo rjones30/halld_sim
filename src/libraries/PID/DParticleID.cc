@@ -1129,6 +1129,7 @@ bool DParticleID::MatchToSC(const DKinematicData* locTrack, const DReferenceTraj
 	      
 	      // Calculate the hit position relative to the upstream end
 	      L = (myz - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+            //L = myz - sc_pos_soss;
 	      // Apply propagation time correction
 	      locCorrectedHitTime -= L*sc_pt_slope[SC_BEND][sc_index] + sc_pt_yint[SC_BEND][sc_index];  
 	      // Apply attenuation correction
@@ -1144,7 +1145,8 @@ bool DParticleID::MatchToSC(const DKinematicData* locTrack, const DReferenceTraj
 	      //L = (myz - sc_pos_eoss)*sc_angle_cor;
 	      
 	      // Calculate the hit position relative to the upstream end
-	      L = (myz - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+          L = (myz - sc_pos_eoss)*sc_angle_cor + (sc_pos_eoss - sc_pos_soss);
+          //L = myz - sc_pos_soss;
 	      // Apply propagation time correction
 	      locCorrectedHitTime -= L*sc_pt_slope[SC_NOSE][sc_index] + sc_pt_yint[SC_NOSE][sc_index]; 
 	      // Apply attenuation correction

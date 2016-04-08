@@ -275,7 +275,8 @@ void hitStartCntr (float xin[4], float xout[4],
        
       //      printf("x_gl, z_gl, x_l, z_l %f %f %f %f %f %f\n",
       //  x[0],x[1],x[2], xlocal[0],xlocal[1],xlocal[2]);
-      
+
+      /*
       float dbent  = 0.0;
       float dpath  = 0.0;
       if(xlocal[2] >= BENT_REGION){
@@ -284,6 +285,9 @@ void hitStartCntr (float xin[4], float xout[4],
       } else {
       	dpath  = xlocal[2];
       }
+      */
+      float dbent = 0.;
+      float dpath = xlocal[2] + 37.551;
 
       /* float dEcorr = dEsum * exp(-dpath/ATTEN_LENGTH); */
       /* float tcorr  = t + dpath/C_EFFECTIVE; */

@@ -77,7 +77,10 @@ inline bool SegmentSortByLayerincreasing(const DFDCSegment* const &segment1, con
 	if(segment1->hits.size()>0)layer1=segment1->hits[0]->wire->layer;
 	if(segment2->hits.size()>0)layer2=segment2->hits[0]->wire->layer;
 
-	return layer1 < layer2;
+	if(layer1==layer2)
+	  return segment1->D < segment2->D;
+	else
+	  return layer1 < layer2;
 }
 
 //------------------
@@ -341,7 +344,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
       const DTrackCandidate *fdccan = fdctrackcandidates[i];
       vector<const DFDCSegment *>segments;
       fdccan->GetT(segments);
-      sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
+      stable_sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
       if (segments[0]->package!=0) continue;
 
       // Flag for matching status
@@ -432,7 +435,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
       const DTrackCandidate *cdccan = cdctrackcandidates[cdc_forward_ids[j]];
       vector<const DCDCTrackHit *>cdchits;
       cdccan->GetT(cdchits);
-      sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
+      stable_sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
       
       // circle parameters
       can->rc=cdccan->rc;
@@ -671,7 +674,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
 	 vector<const DFDCPseudo*>usedfdchits;
 	 candidate->GetT(usedfdchits);
 	 // Sort the hits 
-	 sort(usedfdchits.begin(),usedfdchits.end(),FDCHitSortByLayerincreasing);
+	 stable_sort(usedfdchits.begin(),usedfdchits.end(),FDCHitSortByLayerincreasing);
 	 if ((usedfdchits[0]->wire->layer-1)/6==0){
 	   MatchMethod6(candidate,usedfdchits,used_cdc_hits,num_unmatched_cdcs);
 	 }
@@ -2032,7 +2035,7 @@ bool DTrackCandidate_factory::MatchMethod7(DTrackCandidate *srccan,
   srccan->GetT(fdchits);
   if (fdchits.size()==0) return false;
 
-  sort(fdchits.begin(),fdchits.end(),FDCHitSortByLayerincreasing);
+  stable_sort(fdchits.begin(),fdchits.end(),FDCHitSortByLayerincreasing);
   unsigned int pack1_last=(fdchits[fdchits.size()-1]->wire->layer-1)/6;
   
   for (unsigned int k=0;k<fdctrackcandidates.size();k++){
@@ -2886,20 +2889,20 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
       // Get the segments belonging to the fdc candidate
       vector<const DFDCSegment *>segments;
       fdccan->GetT(segments);
-      sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
+      stable_sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
 
       // Get the hits from the input candidate
       vector<const DFDCPseudo*>myfdchits;
       can->GetT(myfdchits);
       if (myfdchits.size()>0){
-	sort(myfdchits.begin(),myfdchits.end(),FDCHitSortByLayerincreasing);
+	stable_sort(myfdchits.begin(),myfdchits.end(),FDCHitSortByLayerincreasing);
 	unsigned int last_package
 	  =(myfdchits[myfdchits.size()-1]->wire->layer-1)/6;
 	// look for something downstream...
 	if (last_package<segments[0]->package){
 	  vector<const DCDCTrackHit *>cdchits;
 	  can->GetT(cdchits);
-	  sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
+	  stable_sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
 	  // Variables for computing average Bz
 	  double Bz=0;
 	  unsigned int num_hits=0;
@@ -3000,7 +3003,7 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
 	// Get the cdc hits belonging to the track
 	vector<const DCDCTrackHit *>cdchits;
 	can->GetT(cdchits);
-	sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
+	stable_sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
 
 	// Variables for computing average Bz
 	double Bz=0;

@@ -126,13 +126,22 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
 {
   if (!USE_FDC) return NOERROR;
 
+	// print stuff out
+	char buf[200];
+	sprintf(buf,"out/data_%d.txt",eventnumber);
+	//ofstream outf(buf);
+	fstream outf(buf, fstream::app|fstream::out);
+
+	outf << " For event " << eventnumber << " in DTrackCandidate_factory_FDCCathodes::evnt()" << endl;
+
+
   vector<const DFDCSegment*>segments;
   eventLoop->Get(segments);
 
   // abort if there are no segments
   if (segments.size()==0.) return NOERROR;
 
-  std::sort(segments.begin(), segments.end(), DTrackCandidate_segment_cmp);
+  std::stable_sort(segments.begin(), segments.end(), DTrackCandidate_segment_cmp);
 
   // Group segments by package
   vector<DFDCSegment*>packages[4];
@@ -215,10 +224,13 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
       mytracks.push_back(triplets[i]);
     }
   }
+  
+  outf << "matched segments to fit = " << mytracks.size() << endl;
 
   // For each set of matched segments, redo the helical fit with all the hits 
   // and create a new track candidate
   for (unsigned int i=0;i<mytracks.size();i++){  
+  	outf << "track # " << i << endl;
     // Create the fit object and add the hits
     DHelicalFit fit; 
     // Fake point at origin
@@ -247,6 +259,8 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
     xc/=mysize;
     yc/=mysize;
     tanl/=mysize;
+    
+    outf << "seed = " << fit.GetNhits() << " " << rc  << " " << xc  << " " << yc << " " << tanl << endl;
 
     // Do the fit
     if (fit.FitTrackRiemann(rc)==NOERROR){    
@@ -256,6 +270,8 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
       yc=fit.y0;
       rc=fit.r0;
       q=FactorForSenseOfRotation*fit.h;
+
+    outf << "fit result = " << fit.GetNhits() << " " << rc  << " " << xc  << " " << yc << " " << tanl << endl;
 
       // Look for cases where the momentum is unrealistically large...
       const DFDCPseudo *myhit=mytracks[0][0]->hits[0];
@@ -270,6 +286,7 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
 	rc=fit.r0;
 	xc=fit.x0;
 	yc=fit.y0;
+    outf << "circle fit result = " << fit.GetNhits() << " " << rc  << " " << xc  << " " << yc << " " << tanl << endl;
       } 
       if (rc<0.5*max_r && max_r<10.0){
 	// ... we can also have issues near the beam line:
@@ -283,6 +300,7 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
 	yc=fit.y0;
 	fit.FindSenseOfRotation();
 	q=FactorForSenseOfRotation*fit.h;      
+    outf << "fixed Z fit result = " << fit.GetNhits() << " " << rc  << " " << xc  << " " << yc << " " << tanl << endl;
       }
     }
     
@@ -326,6 +344,10 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
       if (is_paired[j][i]==0){
 	const DFDCSegment* segment=packages[j][i];
 	
+    outf << "track stub = " << segment->Ndof << " " << segment->rc  << " " 
+    		<< segment->xc  << " " << segment->yc << endl;
+
+	
 	// Get the momentum and position at a specific z position
 	DVector3 mom, pos;
 	GetPositionAndMomentum(segment,pos,mom);
@@ -348,6 +370,8 @@ jerror_t DTrackCandidate_factory_FDCCathodes::evnt(JEventLoop *loop, uint64_t ev
       }
     }
   }
+
+	outf.close();
 
   return NOERROR;
 }
@@ -659,7 +683,7 @@ bool DTrackCandidate_factory_FDCCathodes::LinkStraySegment(const DFDCSegment *se
    
 	// Add the new segment and sort by z
 	segments.push_back(segment);
-	sort(segments.begin(),segments.end(),DTrackCandidate_segment_cmp_by_z);
+	stable_sort(segments.begin(),segments.end(),DTrackCandidate_segment_cmp_by_z);
 	
 	// Create fit object and add hits
 	DHelicalFit fit;  

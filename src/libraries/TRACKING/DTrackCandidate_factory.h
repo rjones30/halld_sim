@@ -113,7 +113,7 @@ class DTrackCandidate_factory:public JFactory<DTrackCandidate>{
 		    unsigned int &num_unmatched_cdcs
 		    );
   bool MatchMethod7(DTrackCandidate *srccan,vector<int> &forward_matches,
-		    int &num_fdc_cands_remaining);
+		    int &num_fdc_cands_remaining, uint64_t eventnumber);
   bool MatchMethod8(const DTrackCandidate *cdccan,vector<int> &forward_matches,
 		    vector<unsigned int>&used_cdc_hits);
   bool MatchMethod9(unsigned int src_index,const DTrackCandidate *srccan, 
@@ -128,7 +128,7 @@ class DTrackCandidate_factory:public JFactory<DTrackCandidate>{
 		     DHelicalFit &fit2,const DFDCSegment *segment1,
 		     const DFDCSegment *segment2);
   bool MatchMethod12(DTrackCandidate *srccan,vector<int> &forward_matches,
-		     int &num_fdc_cands_remaining);  
+		     int &num_fdc_cands_remaining, uint64_t eventnumber);  
   bool MatchMethod13(unsigned int src_index,const DTrackCandidate *srccan, 
 		     const DFDCSegment *segment,
 		     vector<const DTrackCandidate*>&cands,

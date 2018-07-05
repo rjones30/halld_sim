@@ -52,6 +52,241 @@ using namespace std;
 #define BEAM_VAR 1. // cm^2
 #define EPS 0.001
 
+/*
+static map<uint64_t, fstream *> outff;
+
+string PrintAll(vector<const DFDCSegment *> &data)
+{
+        vector<vector<pair<string,string> > > allitems;
+
+        for(unsigned int i=0;i<data.size();i++){
+                vector<pair<string, string> > myitems;
+                //bool save_append_types = data[i]->GetAppendTypes();
+                //data[i]->SetAppendTypes(append_types);
+                data[i]->toStrings(myitems);
+                //data[i]->SetAppendTypes(save_append_types);
+                if(myitems.size()>0)allitems.push_back(myitems);
+        }
+
+        if(allitems.size()==0)return string("");
+
+        // Make reference to first map which we'll use to get header info
+        vector<pair<string,string> > &h = allitems[0];
+        if(h.size()==0)return string("");
+
+        // Make list of column names and simultaneously capture the string lengths
+        vector<unsigned int> colwidths;
+        vector<string> headers;
+        vector<pair<string,string> >::iterator hiter = h.begin();
+        for(; hiter!=h.end(); hiter++){
+                headers.push_back(hiter->first);
+                colwidths.push_back(hiter->first.length()+2);
+        }
+
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                
+                assert(a.size()==colwidths.size());
+                
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        unsigned int len = b.second.length()+2;
+                        if(len>colwidths[j])colwidths[j] = len;
+                }
+        }
+        
+        stringstream ss;
+        
+        // Print header
+        unsigned int header_width=0;
+        for(unsigned int i=0; i<colwidths.size(); i++)header_width += colwidths[i];
+        string header = string(header_width,' ');
+        unsigned int pos=0;
+        for(unsigned int i=0; i<colwidths.size(); i++){
+                header.replace(pos+colwidths[i]-headers[i].length()-1, headers[i].length()+1, headers[i]+":");
+                pos += colwidths[i];
+        }
+        ss<<header<<endl;
+        
+        ss<<string(header_width,'-')<<endl;
+        
+        // Print data
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                assert(a.size()==colwidths.size());
+                
+                string row = string(header_width,' ');
+                
+                unsigned int pos=0;
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        row.replace(pos+colwidths[j]-b.second.length()-1, b.second.length(), b.second);                 
+                        pos += colwidths[j];
+                }
+                
+                ss<<row<<endl;
+        }
+        
+        return ss.str();
+}
+
+string PrintAll(vector<const DFDCPseudo*> &data)
+{
+        vector<vector<pair<string,string> > > allitems;
+
+        for(unsigned int i=0;i<data.size();i++){
+                vector<pair<string, string> > myitems;
+                //bool save_append_types = data[i]->GetAppendTypes();
+                //data[i]->SetAppendTypes(append_types);
+                data[i]->toStrings(myitems);
+                //data[i]->SetAppendTypes(save_append_types);
+                if(myitems.size()>0)allitems.push_back(myitems);
+        }
+
+        if(allitems.size()==0)return string("");
+
+        // Make reference to first map which we'll use to get header info
+        vector<pair<string,string> > &h = allitems[0];
+        if(h.size()==0)return string("");
+
+        // Make list of column names and simultaneously capture the string lengths
+        vector<unsigned int> colwidths;
+        vector<string> headers;
+        vector<pair<string,string> >::iterator hiter = h.begin();
+        for(; hiter!=h.end(); hiter++){
+                headers.push_back(hiter->first);
+                colwidths.push_back(hiter->first.length()+2);
+        }
+
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                
+                assert(a.size()==colwidths.size());
+                
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        unsigned int len = b.second.length()+2;
+                        if(len>colwidths[j])colwidths[j] = len;
+                }
+        }
+        
+        stringstream ss;
+        
+        // Print header
+        unsigned int header_width=0;
+        for(unsigned int i=0; i<colwidths.size(); i++)header_width += colwidths[i];
+        string header = string(header_width,' ');
+        unsigned int pos=0;
+        for(unsigned int i=0; i<colwidths.size(); i++){
+                header.replace(pos+colwidths[i]-headers[i].length()-1, headers[i].length()+1, headers[i]+":");
+                pos += colwidths[i];
+        }
+        ss<<header<<endl;
+        
+        ss<<string(header_width,'-')<<endl;
+        
+        // Print data
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                assert(a.size()==colwidths.size());
+                
+                string row = string(header_width,' ');
+                
+                unsigned int pos=0;
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        row.replace(pos+colwidths[j]-b.second.length()-1, b.second.length(), b.second);                 
+                        pos += colwidths[j];
+                }
+                
+                ss<<row<<endl;
+        }
+        
+        return ss.str();
+}
+
+string PrintAll(vector<const DCDCTrackHit *> &data)
+{
+        vector<vector<pair<string,string> > > allitems;
+
+        for(unsigned int i=0;i<data.size();i++){
+                vector<pair<string, string> > myitems;
+                //bool save_append_types = data[i]->GetAppendTypes();
+                //data[i]->SetAppendTypes(append_types);
+                data[i]->toStrings(myitems);
+                //data[i]->SetAppendTypes(save_append_types);
+                if(myitems.size()>0)allitems.push_back(myitems);
+        }
+
+        if(allitems.size()==0)return string("");
+
+        // Make reference to first map which we'll use to get header info
+        vector<pair<string,string> > &h = allitems[0];
+        if(h.size()==0)return string("");
+
+        // Make list of column names and simultaneously capture the string lengths
+        vector<unsigned int> colwidths;
+        vector<string> headers;
+        vector<pair<string,string> >::iterator hiter = h.begin();
+        for(; hiter!=h.end(); hiter++){
+                headers.push_back(hiter->first);
+                colwidths.push_back(hiter->first.length()+2);
+        }
+
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                
+                assert(a.size()==colwidths.size());
+                
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        unsigned int len = b.second.length()+2;
+                        if(len>colwidths[j])colwidths[j] = len;
+                }
+        }
+        
+        stringstream ss;
+        
+        // Print header
+        unsigned int header_width=0;
+        for(unsigned int i=0; i<colwidths.size(); i++)header_width += colwidths[i];
+        string header = string(header_width,' ');
+        unsigned int pos=0;
+        for(unsigned int i=0; i<colwidths.size(); i++){
+                header.replace(pos+colwidths[i]-headers[i].length()-1, headers[i].length()+1, headers[i]+":");
+                pos += colwidths[i];
+        }
+        ss<<header<<endl;
+        
+        ss<<string(header_width,'-')<<endl;
+        
+        // Print data
+        for(unsigned int i=0; i<allitems.size(); i++){
+                vector<pair<string,string> > &a = allitems[i];
+                assert(a.size()==colwidths.size());
+                
+                string row = string(header_width,' ');
+                
+                unsigned int pos=0;
+                for(unsigned int j=0; j<a.size(); j++){
+                        pair<string,string> &b = a[j];
+                        
+                        row.replace(pos+colwidths[j]-b.second.length()-1, b.second.length(), b.second);                 
+                        pos += colwidths[j];
+                }
+                
+                ss<<row<<endl;
+        }
+        
+        return ss.str();
+}
+*/
+
 //------------------
 // cdc_fdc_match
 //------------------
@@ -78,9 +313,9 @@ inline bool SegmentSortByLayerincreasing(const DFDCSegment* const &segment1, con
 	if(segment2->hits.size()>0)layer2=segment2->hits[0]->wire->layer;
 
 	if(layer1==layer2)
-	  return segment1->D < segment2->D;
+		return segment1->D < segment2->D;
 	else
-	  return layer1 < layer2;
+		return layer1 < layer2;
 }
 
 //------------------
@@ -256,6 +491,11 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
     return NOERROR;
   }
   
+  	//char buf[200];
+	//sprintf(buf,"out/data_%d.txt",eventnumber);
+	//outff[eventnumber] = new fstream(buf, fstream::app|fstream::out);
+	//(*outff[eventnumber]) << " For event " << eventnumber << " in DTrackCandidate_factory::evnt()" << endl;
+
    // Start counter hits
   vector<const DSCHit *>schits;
   loop->Get(schits);
@@ -572,6 +812,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
     }
   }
 
+	
   // Try to match remaining fdc candidates to track candidates that have 
   // track segments that have already been matched together
   if (num_fdc_cands_remaining>0){
@@ -580,12 +821,13 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
       if (num_fdc_cands_remaining==0) break;
       
       DTrackCandidate *can=trackcandidates[i];      
-      if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining)==false){
-	if (can->momentum().Mag()<0.5){
-	  if (MatchMethod12(can,forward_matches,num_fdc_cands_remaining)){
+      if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining,eventnumber)==false){
+		if (can->momentum().Mag()<0.5){
+		//cerr <<" MatchMethod12()" << endl;
+	  	if (MatchMethod12(can,forward_matches,num_fdc_cands_remaining,eventnumber)){
 	    candidate_updated[i]=1;
 	  }
-	}
+	  }
       }
     }
     if (num_fdc_cands_remaining>0){
@@ -594,9 +836,9 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
 	if (num_fdc_cands_remaining==0) break;
 	if (candidate_updated[i]==1){
 	  DTrackCandidate *can=trackcandidates[i];   
-	  if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining)==false){
+	  if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining,eventnumber)==false){
 	    if (can->momentum().Mag()<0.5){
-	      MatchMethod12(can,forward_matches,num_fdc_cands_remaining);
+	      MatchMethod12(can,forward_matches,num_fdc_cands_remaining,eventnumber);
 	    }
 	  }
 	}
@@ -604,6 +846,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
     }
   }
 
+	
   // We should be left with only single-segment fdc candidates.  We try to 
   // connect them together using alternate fitting techniques, either by
   // forcing the circle to originate from the target or at the other extreme
@@ -616,9 +859,9 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
 	if (num_fdc_cands_remaining==0) break;
 	
 	DTrackCandidate *can=trackcandidates[i];      
-	if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining)==false){
-	  if (can->momentum().Mag()<0.5){
-	    MatchMethod12(can,forward_matches,num_fdc_cands_remaining);
+	if (MatchMethod7(can,forward_matches,num_fdc_cands_remaining,eventnumber)==false){
+		if (can->momentum().Mag()<0.5){
+	    MatchMethod12(can,forward_matches,num_fdc_cands_remaining,eventnumber);
 	  }
 	}
       } 
@@ -655,10 +898,12 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
       }
     }
   }
+    
 
   //There are frequently several hits in the CDC that are not associated with
   // any track segment.  In this case, try to attach these stray hits to a
   // track in the FDC that has hits in the first package.
+  
   if (num_unmatched_cdcs>0){
     if (DEBUG_LEVEL>0){
       _DBG_ << "Trying to use stray CDC hits in match to FDC..." << endl;
@@ -682,6 +927,7 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
       }
     }
   }
+
 
   // Only output the candidates that have at least a minimum number of hits
   for (unsigned int i=0;i<trackcandidates.size();i++){
@@ -721,6 +967,8 @@ jerror_t DTrackCandidate_factory::evnt(JEventLoop *loop, uint64_t eventnumber)
     _data[loc_i]->dCDCRings = dParticleID->Get_CDCRingBitPattern(locCDCTrackHits);
     _data[loc_i]->dFDCPlanes = dParticleID->Get_FDCPlaneBitPattern(locFDCPseudos);
   }
+  
+  //outff[eventnumber]->close();
   
   return NOERROR;
 }
@@ -2027,15 +2275,22 @@ void DTrackCandidate_factory::MatchMethod6(DTrackCandidate *can,
 // already have fdc/cdc matches 
 bool DTrackCandidate_factory::MatchMethod7(DTrackCandidate *srccan, 
 					   vector<int> &forward_matches,
-					   int &num_fdc_cands_remaining){ 
+					   int &num_fdc_cands_remaining, uint64_t eventnumber){ 
   if (DEBUG_LEVEL>0)  _DBG_ << "Attempting matching method #7..." <<endl; 
 
+  //char idbuf[50];
+  //sprintf(idbuf, "0x%x", srccan->id);
+  //(*outff[eventnumber]) << "In DTrackCandidate_factory::MatchMethod7() for track cand = " << idbuf << endl;
+  
   // Get the hits associated with this candidate
   vector<const DFDCPseudo *>fdchits;
   srccan->GetT(fdchits);
   if (fdchits.size()==0) return false;
 
   stable_sort(fdchits.begin(),fdchits.end(),FDCHitSortByLayerincreasing);
+  //(*outff[eventnumber]) << "DFDCPseudos:" << endl;
+  //(*outff[eventnumber]) << PrintAll(fdchits) << endl;
+
   unsigned int pack1_last=(fdchits[fdchits.size()-1]->wire->layer-1)/6;
   
   for (unsigned int k=0;k<fdctrackcandidates.size();k++){
@@ -2043,10 +2298,15 @@ bool DTrackCandidate_factory::MatchMethod7(DTrackCandidate *srccan,
     if (forward_matches[k]==0){
       const DTrackCandidate *fdccan = fdctrackcandidates[k];
 
+      //sprintf(idbuf, "0x%x", fdccan->id);
+	  //(*outff[eventnumber]) << "Matching FDC track cand = " << idbuf << endl;
+
       // Get the segment data
       vector<const DFDCSegment *>segments;
       fdccan->GetT(segments);
-      sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
+      stable_sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
+	  //(*outff[eventnumber]) << "DFDCSegments:" << endl;
+	  //(*outff[eventnumber]) << PrintAll(segments) << endl;
 	
       const DFDCPseudo *firsthit=segments[0]->hits[0];
       unsigned int pack2_first=segments[0]->package;
@@ -2104,6 +2364,8 @@ bool DTrackCandidate_factory::MatchMethod7(DTrackCandidate *srccan,
 	  vector<const DCDCTrackHit *>cdchits;
 	  srccan->GetT(cdchits);
 	  stable_sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
+	  //(*outff[eventnumber]) << "DCDCTrackHits:" << endl;
+	  //(*outff[eventnumber]) << PrintAll(cdchits) << endl;
 	  for (unsigned int i=0;i<cdchits.size();i++){
 	    if (cdchits[i]->is_stereo==false){
 	      double cov=0.213;  //guess
@@ -2867,10 +3129,15 @@ bool DTrackCandidate_factory::MatchMethod11(double q,DVector3 &mypos,
 // curvature
 bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can, 
 					    vector<int> &forward_matches,
-					    int &num_fdc_cands_remaining){ 
+					    int &num_fdc_cands_remaining, uint64_t eventnumber){ 
   if (DEBUG_LEVEL>0){ 
     _DBG_ << "Attempting matching method #12..." <<endl; 
   }
+  
+  //char idbuf[50];
+  //sprintf(idbuf, "0x%x", can->id);
+  //(*outff[eventnumber]) << "In DTrackCandidate_factory::MatchMethod12() for track cand = " << idbuf << endl;
+  
   for (unsigned int i=0;i<fdctrackcandidates.size();i++){
     if (num_fdc_cands_remaining==0) return false;
     if (forward_matches[i]) continue;
@@ -2878,10 +3145,17 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
     const DTrackCandidate *fdccan = fdctrackcandidates[i];
     if (fdccan->momentum().Mag()>0.5) continue;
 
+    //sprintf(idbuf, "0x%x", fdccan->id);
+	//(*outff[eventnumber]) << "Matching FDC track cand = " << idbuf << endl;
+
     // Find how close the circle centers are to each other
     double dx=can->xc-fdccan->xc;
     double dy=can->yc-fdccan->yc;
     double dr2=dx*dx+dy*dy;
+    
+    //(*outff[eventnumber]) << "Match parameters = " << dr2 << ", " << fabs((can->rc-fdccan->rc)/can->rc) << ", " 
+    //	<< fabs(can->momentum().Theta()-fdccan->momentum().Theta()) << endl;
+    
     // Require circle centers, radii and angles to agree at a reasonable level
     if (dr2<4.0 && fabs((can->rc-fdccan->rc)/can->rc)<0.5
 	&& fabs(can->momentum().Theta()-fdccan->momentum().Theta())<0.35 // 20 degrees
@@ -2890,12 +3164,17 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
       vector<const DFDCSegment *>segments;
       fdccan->GetT(segments);
       stable_sort(segments.begin(), segments.end(), SegmentSortByLayerincreasing);
+	  //(*outff[eventnumber]) << "DFDCSegments:" << endl;
+	  //(*outff[eventnumber]) << PrintAll(segments) << endl;
+	  //for(auto seg : segments) {}
 
       // Get the hits from the input candidate
       vector<const DFDCPseudo*>myfdchits;
       can->GetT(myfdchits);
       if (myfdchits.size()>0){
 	stable_sort(myfdchits.begin(),myfdchits.end(),FDCHitSortByLayerincreasing);
+	  //(*outff[eventnumber]) << "DFDCPseudos:" << endl;
+	  //(*outff[eventnumber]) << PrintAll(myfdchits) << endl;
 	unsigned int last_package
 	  =(myfdchits[myfdchits.size()-1]->wire->layer-1)/6;
 	// look for something downstream...
@@ -2903,6 +3182,9 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
 	  vector<const DCDCTrackHit *>cdchits;
 	  can->GetT(cdchits);
 	  stable_sort(cdchits.begin(), cdchits.end(), CDCHitSortByLayerincreasing);
+	  //(*outff[eventnumber]) << "DCDCTrackHits:" << endl;
+	  //(*outff[eventnumber]) << PrintAll(cdchits) << endl;
+
 	  // Variables for computing average Bz
 	  double Bz=0;
 	  unsigned int num_hits=0;
@@ -2999,7 +3281,7 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
 	  } // circle fit	   
 	} // look for packages downstream of those attached to candidate
       } // if we have fdc hits in the existing track candidate
-      else{
+    /*  else{
 	// Get the cdc hits belonging to the track
 	vector<const DCDCTrackHit *>cdchits;
 	can->GetT(cdchits);
@@ -3087,7 +3369,7 @@ bool DTrackCandidate_factory::MatchMethod12(DTrackCandidate *can,
 	    
 	  } // momentum and position
 	} // circle fit worked
-      }
+      }  */
     } // matching criteria
   } // loop over existing track candidates
 
